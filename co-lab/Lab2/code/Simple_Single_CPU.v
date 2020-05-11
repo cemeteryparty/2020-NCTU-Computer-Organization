@@ -1,4 +1,4 @@
-// Author:
+// Author: 0716085賴品樺, 0716316洪珩均
 
 module Simple_Single_CPU(
     clk_i,

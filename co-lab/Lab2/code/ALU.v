@@ -1,4 +1,4 @@
-// Author:
+// Author: 0716316洪珩均, 0716085賴品樺
 
 module ALU(
     src1_i,

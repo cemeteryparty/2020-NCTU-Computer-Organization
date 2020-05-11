@@ -1,4 +1,4 @@
-// Author:
+// Author: 0716085賴品樺, 0716316洪珩均
 
 module Adder(
     src1_i,

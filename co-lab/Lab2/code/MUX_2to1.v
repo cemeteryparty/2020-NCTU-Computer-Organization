@@ -1,4 +1,4 @@
-// Author:
+// Author: 0716316洪珩均, 0716085賴品樺
 
 module MUX_2to1(
     data0_i,
