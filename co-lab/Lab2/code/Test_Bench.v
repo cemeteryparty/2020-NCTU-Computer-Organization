@@ -19,7 +19,7 @@ Simple_Single_CPU cpu(
 always #(`CYCLE_TIME/2) CLK = ~CLK;
 
 initial  begin
-    $readmemb("_CO_Lab2_test_data_addu.txt", cpu.IM.Instr_Mem);
+    $readmemb("_CO_Lab2_test_data_ori.txt", cpu.IM.Instr_Mem);
     $dumpfile("simple_cpu.vcd");
     $dumpvars(0, cpu);
 

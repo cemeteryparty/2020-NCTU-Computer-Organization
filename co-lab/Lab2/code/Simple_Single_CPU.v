@@ -9,33 +9,33 @@ module Simple_Single_CPU(
 input clk_i;
 input rst_i;
 
-wire [32-1:0] addr_n; 
-wire [32-1:0] addr;
-wire [32-1:0] addr_n1;
-wire [32-1:0] addr_n2;
-wire [32-1:0] addr_sh;
+wire [32-1:0] addr_n;  // next PC
+wire [32-1:0] addr;    // present PC
+wire [32-1:0] addr_n1; // PC + 4
+wire [32-1:0] addr_n2; // PC + 4 + TARGET * 4
+wire [32-1:0] addr_sh; // TARGET * 4
 
-wire [32-1:0] instr;
-// decoder output (control)
-wire         RegWrite;
-wire [3-1:0] ALUOp;
-wire         ALUSrc;
-wire         RegDst;
-wire         Branch;
+wire [32-1:0] instr;   // Instruction
+// decoder output (control) 
+wire         RegWrite; // 
+wire [3-1:0] ALUOp;    // 
+wire         ALUSrc;   //
+wire         RegDst;   //
+wire         Branch;   //
 
 wire [4-1:0]  ALUCtrl;
 wire          Zero;
-wire          BranchSel;
-wire          RegRead1;
+wire          GetBranch;
 
 wire [5-1:0]  reg_write;
-wire [32-1:0] reg_data1_i;
-wire [32-1:0] reg_data1;
-wire [32-1:0] reg_data2_i;
-wire [32-1:0] reg_data2;
+wire [32-1:0] reg_rs_out;
+wire [32-1:0] reg_rt_out;
+wire [32-1:0] alu_src0;
+wire [32-1:0] alu_src;
 
-wire [32-1:0] data_ext;
-wire [32-1:0] res_alu;
+
+wire [32-1:0] data_ext; // extend data
+wire [32-1:0] alu_res;  // ALU result
 
 ProgramCounter PC(
     .clk_i(clk_i),
@@ -64,18 +64,18 @@ MUX_2to1 #(.size(5)) Mux_Write_Reg( // RD
 
 Reg_File RF(
     .clk_i(clk_i),
-    .rst_i(rst_i) ,
-    .RSaddr_i(instr[25:21]) ,
-    .RTaddr_i(instr[20:16]) ,
-    .RDaddr_i(reg_write) ,
-    .RDdata_i(res_alu)  ,
+    .rst_i(rst_i),
+    .RSaddr_i(instr[25:21]), // rs
+    .RTaddr_i(instr[20:16]), // rt
+    .RDaddr_i(reg_write), // rd  
+    .RDdata_i(alu_res), // data from alu
     .RegWrite_i(RegWrite),
-    .RSdata_o(reg_data1_i),
-    .RTdata_o(reg_data2_i)
+    .RSdata_o(reg_rs_out), // rs out
+    .RTdata_o(reg_rt_out)  //rt out
     );
 
 Decoder Decoder(
-    .instr_op_i(instr[31:26]),
+    .instr_op_i(instr[31:26]), // input OPCODE 6 bits
     .RegWrite_o(RegWrite),
     .ALU_op_o(ALUOp),
     .ALUSrc_o(ALUSrc),
@@ -95,17 +95,17 @@ Sign_Extend SE(
     );
 
 MUX_2to1 #(.size(32)) Mux_ALUSrc( // ALUSrc
-    .data0_i(reg_data2_i),
-    .data1_i(data_ext),
+    .data0_i(reg_rt_out), //rt out
+    .data1_i(data_ext), // extend
     .select_i(ALUSrc),
-    .data_o(reg_data2)
+    .data_o(alu_src)
     );
-
+assign alu_src0 = (ALUCtrl[3] == 1'b0)?reg_rs_out:{17'b00000000000000000, instr[10:6]}; // MUX(rt:shamt)
 ALU ALU(
-    .src1_i(reg_data1),
-    .src2_i(reg_data2),
+    .src1_i(alu_src0),
+    .src2_i(alu_src),
     .ctrl_i(ALUCtrl),
-    .result_o(res_alu),
+    .result_o(alu_res),
     .zero_o(Zero)
     );
 
@@ -120,11 +120,11 @@ Shift_Left_Two_32 Shifter(
     .data_o(addr_sh)
     );
 
-assign BranchSel = Branch && ((instr[26] == 1'b0)?Zero:~Zero); // MUX
+assign GetBranch = Branch && ((instr[26] == 1'b0)?Zero:~Zero); // AND(Branch,MUX(Zero:~Zero))
 MUX_2to1 #(.size(32)) Mux_PC_Source(
     .data0_i(addr_n1),
     .data1_i(addr_n2),
-    .select_i(BranchSel),
+    .select_i(GetBranch),
     .data_o(addr_n)
     );
 

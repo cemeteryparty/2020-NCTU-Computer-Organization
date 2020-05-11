@@ -34,7 +34,7 @@ assign RTdata_o = Reg_File[RTaddr_i] ;
 //Writing data when postive edge clk_i and RegWrite_i was set.
 always @( posedge rst_i or posedge clk_i  ) begin
     if(rst_i == 0) begin
-        Reg_File[0]  <= 0; Reg_File[1]  <= 1; Reg_File[2]  <= 2;  Reg_File[3]  <= 3;
+        Reg_File[0]  <= 57005; Reg_File[1]  <= 1; Reg_File[2]  <= 2;  Reg_File[3]  <= 3;
         Reg_File[4]  <= 4; Reg_File[5]  <= 5; Reg_File[6]  <= 6;  Reg_File[7]  <= 7;
         Reg_File[8]  <= 8; Reg_File[9]  <= 9; Reg_File[10] <= -1; Reg_File[11] <= -2;
         Reg_File[12] <= 0; Reg_File[13] <= 0; Reg_File[14] <= 0;  Reg_File[15] <= 0;

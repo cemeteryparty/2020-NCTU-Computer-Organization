@@ -28,9 +28,9 @@ assign RegWrite_o = (instr_op_i == 0 || instr_op_i == 8 || instr_op_i == 11 || i
 assign ALU_op_o = (instr_op_i == 4 ? 3'b011 : // BEQ -> SUB
                   (instr_op_i == 5 ? 3'b011 : // BNE -> SUB
                   (instr_op_i == 8 ? 3'b010 : // ADDI -> ADD
-                  (instr_op_i == 11 ? 3'b100 : // SLTIU -> SLT
+                  (instr_op_i == 11 ? 3'b100 : // SLTIU -> SLTIU
                   (instr_op_i == 13 ? 3'b001 : // ORI -> OR
-                  (instr_op_i == 15 ? 3'b110 : // LUI -> SL
+                  (instr_op_i == 15 ? 3'b110 : // LUI -> LUI
                   3'b111))))));
 assign ALUSrc_o = (instr_op_i == 8 || instr_op_i == 11 || instr_op_i == 15 || instr_op_i == 13);
 assign RegDst_o = (instr_op_i == 0);
