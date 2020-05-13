@@ -1,4 +1,4 @@
-// Author: 0716316洪珩均, 0716085賴品樺
+// Author: Pin-Hua Lai, Heng-Jun Hong
 
 module ALU(
     src1_i,
