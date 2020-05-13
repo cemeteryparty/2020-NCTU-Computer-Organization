@@ -1,4 +1,4 @@
-// Author: 0716085賴品樺, 0716316洪珩均
+// Author: Pin-Hua Lai, Heng-Jun Hong
 
 module ALU_Ctrl(
         funct_i,
