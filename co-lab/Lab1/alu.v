@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-// Pin-Hua Lai 0716085
+// Author: Pin-Hua Lai
 module alu(
     rst_n,          // negative reset            (input)
     src1,           // 32 bits source 1          (input)
