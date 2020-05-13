@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-// Pin-Hua Lai 0716085
+// Author: Pin-Hua Lai
 module alu_top(
     src1,       //1 bit source 1 (input)
     src2,       //1 bit source 2 (input)
