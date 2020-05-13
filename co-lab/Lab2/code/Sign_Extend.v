@@ -1,4 +1,4 @@
-// Author: 0716316洪珩均, 0716085賴品樺
+// Author: Pin-Hua Lai, Heng-Jun Hong
 
 module Sign_Extend(
     data_i,
