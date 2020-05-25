@@ -1,5 +1,5 @@
 // Author: 0716085賴品樺, 0716316洪珩均
-// (final)
+
 module ALU_Ctrl(
         funct_i,
         ALUOp_i,
@@ -24,7 +24,7 @@ output             Shamt;
 assign ALUCtrl_o = (ALUOp_i != 3'b111)?ALUOp_i_ex // i-type
 				 : ((funct_i == 6'b000111)?4'b0101 // srav: >> (5)
 				 : ((funct_i == 6'b000011)?4'b0101 // sra : >> (5)
-				 : ((funct_i == 6'b000000)?4'b0110 // sll : << (6)
+				 : ((funct_i == 6'b000000)?4'b1110 // sll : << (14)
 				 : ((funct_i == 6'b101010)?4'b0111 // slt: <   (7)
 				 : ((funct_i == 6'b100101)?4'b0001 // or: |    (1)
 				 : ((funct_i == 6'b100100)?4'b0000 // and: &   (0)
