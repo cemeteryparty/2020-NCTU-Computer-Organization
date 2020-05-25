@@ -33,7 +33,7 @@ wire          JumpReg;
 wire          Shamt;
 
 wire          Zero;
-wire          GetBranch;
+wire          GetBranch; // Branch result checking
 
 wire [5-1:0]  reg_write;
 wire [32-1:0] reg_rs_out;
@@ -153,11 +153,15 @@ Shift_Left_Two_32 Shifter(
     .data_o(addr_sh)
     );
 
-assign GetBranch = Branch && ((instr[26] == 1'b0)?Zero:~Zero); // AND(Branch,MUX(Zero:~Zero)) ////////
+assign GetBranch = (BranchType == 0)?Zero
+               : ((BranchType == 1)?~Zero
+               : ((BranchType == 2)?alu_res[31]
+               : ((BranchType == 3)?~(Zero | alu_res[31])
+               : 1'b0)));
 MUX_2to1 #(.size(32)) Mux_PC_Source(
     .data0_i(addr_n1),
     .data1_i(addr_n2),
-    .select_i(GetBranch),
+    .select_i(Branch & GetBranch), // AND gate of branch
     .data_o(addr_n)
     );
 
