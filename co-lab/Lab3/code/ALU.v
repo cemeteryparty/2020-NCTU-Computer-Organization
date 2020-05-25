@@ -24,10 +24,10 @@ assign result_o = (ctrl_i == 0 ? src1_i & src2_i :                   // &
                   (ctrl_i == 3 ? src1_i - src2_i :                   // -
                   (ctrl_i == 4 ? src1_i < src2_i :                   // <u
                   (ctrl_i == 5 ? src2_i >> src1_i :                  // >>
-                  (ctrl_i == 6 ? src2_i << src1_i :                  // <<
+                  (ctrl_i == 14 ? src2_i << src1_i :                 // <<
                   (ctrl_i == 7 ? $signed(src1_i) < $signed(src2_i) : // <
                   (ctrl_i == 8 ? src1_i * src2_i :                   // *
-                  (ctrl_i == 14? src2_i << 16 :                      // lui
+                  (ctrl_i == 6? src2_i << 16 :                       // lui
                   32'b00000000000000000000000000000000))))))))));
 assign zero_o = (result_o == 32'b00000000000000000000000000000000);
 endmodule
