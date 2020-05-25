@@ -9,11 +9,15 @@ module Simple_Single_CPU(
 input clk_i;
 input rst_i;
 
-wire [32-1:0] addr_n;  // next PC
-wire [32-1:0] addr;    // present PC
-wire [32-1:0] addr_n1; // PC + 4
-wire [32-1:0] addr_n2; // PC + 4 + TARGET * 4
+wire [32-1:0] addr_n;  // next address, from before
+wire [32-1:0] addr;    // present address
+wire [32-1:0] addr_n1; // address + 4
 wire [32-1:0] addr_sh; // TARGET * 4
+wire [32-1:0] addr_n2; // addr_n1 + addr_sh
+wire [32-1:0] addr_shj; // instr[25:0] * 4, instr[25:0] => [27:0] // simplify, using 32-bit
+wire [32-1:0] addr_nj; // addr_n1[31:28]###addr_shj[27:0] 
+wire [32-1:0] addr_nr; // regular address, no jump
+wire [32-1:0] addr_jor; // address from jump or regular
 
 wire [32-1:0] instr;   // Instruction
 // decoder output (control) 
@@ -52,12 +56,6 @@ ProgramCounter PC(
     .pc_out_o(addr)
     );
 
-Adder Adder1( // A1, PC + 4
-    .src1_i(addr),
-    .src2_i(4),
-    .sum_o(addr_n1)
-    );
-
 Instr_Memory IM(
     .pc_addr_i(addr),
     .instr_o(instr)
@@ -82,14 +80,6 @@ Reg_File RF(
     .RTdata_o(reg_rt_out)  //rt out
     );
 
-/*Decoder Decoder(
-    .instr_op_i(instr[31:26]), // input OPCODE 6 bits
-    .RegWrite_o(RegWrite),
-    .ALU_op_o(ALUOp),
-    .ALUSrc_o(ALUSrc),
-    .RegDst_o(RegDst),
-    .Branch_o(Branch)
-    );*/ // Lab 2 Decoder
 Decoder Decoder(
     .instr_op(instr[31:26]),
     .RegWrite(RegWrite),
@@ -123,7 +113,7 @@ MUX_2to1 #(.size(32)) Mux_ALUSrc( // ALUSrc
     .select_i(ALUSrc),
     .data_o(alu_src)
     );
-assign alu_src0 = (Shamt == 1'b0)?reg_rs_out:{17'b00000000000000000, instr[10:6]}; // MUX(rt:shamt) //ok
+assign alu_src0 = (Shamt == 1'b0)?reg_rs_out:{17'b00000000000000000, instr[10:6]}; // MUX(rt:shamt)
 ALU ALU(
     .src1_i(alu_src0),
     .src2_i(alu_src),
@@ -142,27 +132,37 @@ Data_Memory DM(
 );
 assign WriteData = MemToReg?DM_out:alu_res;
 
-Adder Adder2( // A2, PC = target
+Adder Adder1( // address + 4
+    .src1_i(addr),
+    .src2_i(4),
+    .sum_o(addr_n1)
+    );
+Adder Adder2( // addr_n1 + addr_sh
     .src1_i(addr_n1),
     .src2_i(addr_sh),
     .sum_o(addr_n2)
     );
 
-Shift_Left_Two_32 Shifter(
+Shift_Left_Two_32 Shifterb( // branch shifter
     .data_i(data_ext),
     .data_o(addr_sh)
     );
-
-assign GetBranch = (BranchType == 0)?Zero
-               : ((BranchType == 1)?~Zero
-               : ((BranchType == 2)?alu_res[31]
-               : ((BranchType == 3)?~(Zero | alu_res[31])
+Shift_Left_Two_32 Shifterj( // jump shifter
+    .data_i(instr),
+    .data_o(addr_shj)
+    );
+assign addr_nj = {addr_n1[31:28],addr_shj[27:0]};
+assign GetBranch = (BranchType == 0)?Zero                 // BEQ
+               : ((BranchType == 1)?~Zero                 // BNE
+               : ((BranchType == 2)?alu_res[31]           // BLEZ
+               : ((BranchType == 3)?~(Zero | alu_res[31]) // BGTZ
                : 1'b0)));
 MUX_2to1 #(.size(32)) Mux_PC_Source(
     .data0_i(addr_n1),
     .data1_i(addr_n2),
     .select_i(Branch & GetBranch), // AND gate of branch
-    .data_o(addr_n)
+    .data_o(addr_nr)
     );
-
+assign addr_jor = Jump?addr_nj:addr_nr;
+assign addr_n = JumpReg?reg_rs_out:addr_jor;
 endmodule
