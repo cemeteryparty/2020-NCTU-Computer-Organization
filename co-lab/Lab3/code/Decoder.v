@@ -44,10 +44,10 @@ assign ALU_op = (instr_op == 4 ? 3'b011 : // BEQ -> SUB
 assign ALUSrc = (instr_op == 8 || instr_op == 11 || instr_op == 15 || instr_op == 13);
 assign RegDst = (instr_op == 0);
 assign Branch = (instr_op == 4 || instr_op == 5 || instr_op == 6 || instr_op == 7);
-assign BranchType = (instr_op == 4 ? 2'b00 : // BEQ -> SUB
-                    (instr_op == 5 ? 2'b01 : // BNE -> SUB
-                    (instr_op == 6 ? 2'b10 : // ADDI -> ADD
-                    2'b11)));
+assign BranchType = (instr_op == 4 ? 2'b00 : // BEQ
+                    (instr_op == 5 ? 2'b01 : // BNE
+                    (instr_op == 6 ? 2'b10 : // BLEZ
+                    2'b11)));                // BGTZ
 assign Jump = (instr_op == 2 || instr_op == 3);
 
 
