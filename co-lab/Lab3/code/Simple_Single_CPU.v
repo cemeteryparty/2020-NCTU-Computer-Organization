@@ -17,15 +17,21 @@ wire [32-1:0] addr_sh; // TARGET * 4
 
 wire [32-1:0] instr;   // Instruction
 // decoder output (control) 
-wire         RegWrite; // 
-wire [3-1:0] ALUOp;    // 
-wire         ALUSrc;   //
-wire         RegDst;   //
-wire         Branch;   //
-
+wire         RegWrite;  
+wire         MemToReg;
+wire         MemRead;
+wire         MemWrite;
+wire [3-1:0] ALUOp;
+wire         ALUSrc;
+wire         RegDst;
+wire         Branch;
+wire         BranchType;
+wire         Jump;
+// ALU control output
+wire [4-1:0]  ALUCtrl;
 wire          JumpReg;
 wire          Shamt;
-wire [4-1:0]  ALUCtrl;
+
 wire          Zero;
 wire          GetBranch;
 
@@ -34,10 +40,10 @@ wire [32-1:0] reg_rs_out;
 wire [32-1:0] reg_rt_out;
 wire [32-1:0] alu_src0;
 wire [32-1:0] alu_src;
-
-
 wire [32-1:0] data_ext; // extend data
 wire [32-1:0] alu_res;  // ALU result
+wire [32-1:0] DM_out;
+wire [32-1:0] WriteData; // data write back to reg
 
 ProgramCounter PC(
     .clk_i(clk_i),
@@ -70,28 +76,41 @@ Reg_File RF(
     .RSaddr_i(instr[25:21]), // rs
     .RTaddr_i(instr[20:16]), // rt
     .RDaddr_i(reg_write), // rd  
-    .RDdata_i(alu_res), // data from alu
+    .RDdata_i(WriteData),  // 
     .RegWrite_i(RegWrite),
     .RSdata_o(reg_rs_out), // rs out
     .RTdata_o(reg_rt_out)  //rt out
     );
 
-Decoder Decoder(
+/*Decoder Decoder(
     .instr_op_i(instr[31:26]), // input OPCODE 6 bits
     .RegWrite_o(RegWrite),
     .ALU_op_o(ALUOp),
     .ALUSrc_o(ALUSrc),
     .RegDst_o(RegDst),
     .Branch_o(Branch)
+    );*/ // Lab 2 Decoder
+Decoder Decoder(
+    .instr_op(instr[31:26]),
+    .RegWrite(RegWrite),
+    .MemToReg(MemToReg), // DM
+    .MemRead(MemRead), // DM
+    .MemWrite(MemWrite), //DM
+    .ALU_op(ALUOp),
+    .ALUSrc(ALUSrc),
+    .RegDst(RegDst),
+    .Branch(Branch), // branch redirect PC
+    .BranchType(BranchType), // branch redirect PC
+    .Jump(Jump) // j-type redirect PC
     );
 
 ALU_Ctrl AC(
     .funct_i(instr[5:0]),
     .ALUOp_i(ALUOp),
     .ALUCtrl_o(ALUCtrl),
-    .JumpReg(JumpReg),
-    .Shamt(Shamt)
-    ); // ok
+    .JumpReg(JumpReg), // jr redirect PC
+    .Shamt(Shamt) // determine alu_src0 from reg_rs_out or instr[10:6](shamt)
+    );
 
 Sign_Extend SE(
     .data_i(instr[15:0]),
@@ -113,6 +132,16 @@ ALU ALU(
     .zero_o(Zero)
     );
 
+Data_Memory DM(
+    .clk_i(clk_i),
+    .addr_i(alu_res),
+    .data_i(reg_rt_out),
+    .MemRead_i(MemRead),
+    .MemWrite_i(MemWrite),
+    .data_o(DM_out)
+);
+assign WriteData = MemToReg?DM_out:alu_res;
+
 Adder Adder2( // A2, PC = target
     .src1_i(addr_n1),
     .src2_i(addr_sh),
@@ -124,7 +153,7 @@ Shift_Left_Two_32 Shifter(
     .data_o(addr_sh)
     );
 
-assign GetBranch = Branch && ((instr[26] == 1'b0)?Zero:~Zero); // AND(Branch,MUX(Zero:~Zero))
+assign GetBranch = Branch && ((instr[26] == 1'b0)?Zero:~Zero); // AND(Branch,MUX(Zero:~Zero)) ////////
 MUX_2to1 #(.size(32)) Mux_PC_Source(
     .data0_i(addr_n1),
     .data1_i(addr_n2),
