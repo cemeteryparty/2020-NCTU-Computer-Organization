@@ -40,6 +40,7 @@ wire          Zero;
 wire          GetBranch; // Branch result checking
 
 wire [5-1:0]  reg_write;
+wire [5-1:0]  reg_rd_in;
 wire [32-1:0] reg_rs_out;
 wire [32-1:0] reg_rt_out;
 wire [32-1:0] alu_src0;
@@ -47,7 +48,8 @@ wire [32-1:0] alu_src;
 wire [32-1:0] data_ext; // extend data
 wire [32-1:0] alu_res;  // ALU result
 wire [32-1:0] DM_out;
-wire [32-1:0] WriteData; // data write back to reg
+wire [32-1:0] WriteData0; // data from last instr
+wire [32-1:0] WriteData;  // data write back to reg
 
 ProgramCounter PC(
     .clk_i(clk_i),
@@ -67,13 +69,14 @@ MUX_2to1 #(.size(5)) Mux_Write_Reg( // RD
     .select_i(RegDst),
     .data_o(reg_write)
     );
-
+assign reg_rd_in = Jump?5'b11111:reg_write;
+assign WriteData = Jump?addr_n1:WriteData0;
 Reg_File RF(
     .clk_i(clk_i),
     .rst_i(rst_i),
     .RSaddr_i(instr[25:21]), // rs
     .RTaddr_i(instr[20:16]), // rt
-    .RDaddr_i(reg_write), // rd  
+    .RDaddr_i(reg_rd_in), // rd  
     .RDdata_i(WriteData),  // 
     .RegWrite_i(RegWrite),
     .RSdata_o(reg_rs_out), // rs out
@@ -131,7 +134,7 @@ Data_Memory Data_Memory(
     .MemWrite_i(MemWrite),
     .data_o(DM_out)
 );
-assign WriteData = MemToReg?DM_out:alu_res;
+assign WriteData0 = MemToReg?DM_out:alu_res;
 
 Adder Adder1( // address + 4
     .src1_i(addr),
