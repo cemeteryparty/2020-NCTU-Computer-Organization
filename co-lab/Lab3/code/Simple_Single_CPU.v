@@ -29,7 +29,7 @@ wire [3-1:0] ALUOp;
 wire         ALUSrc;
 wire         RegDst;
 wire         Branch;
-wire         BranchType;
+wire [2-1:0] BranchType;
 wire         Jump;
 // ALU control output
 wire [4-1:0]  ALUCtrl;
