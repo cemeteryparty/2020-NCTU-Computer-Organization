@@ -122,7 +122,7 @@ ALU ALU(
     .zero_o(Zero)
     );
 
-Data_Memory DM(
+Data_Memory Data_Memory(
     .clk_i(clk_i),
     .addr_i(alu_res),
     .data_i(reg_rt_out),
