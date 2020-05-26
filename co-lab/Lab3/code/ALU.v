@@ -23,7 +23,7 @@ assign result_o = (ctrl_i == 0 ? src1_i & src2_i :                   // &
                   (ctrl_i == 2 ? src1_i + src2_i :                   // +
                   (ctrl_i == 3 ? src1_i - src2_i :                   // -
                   (ctrl_i == 4 ? src1_i < src2_i :                   // <u
-                  (ctrl_i == 5 ? src2_i >> src1_i :                  // >>
+                  (ctrl_i == 5 ? $signed(src2_i) >>> src1_i :                  // >>
                   (ctrl_i == 14 ? src2_i << src1_i :                 // <<
                   (ctrl_i == 7 ? $signed(src1_i) < $signed(src2_i) : // <
                   (ctrl_i == 8 ? src1_i * src2_i :                   // *

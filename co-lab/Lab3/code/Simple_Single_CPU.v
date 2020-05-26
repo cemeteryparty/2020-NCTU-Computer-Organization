@@ -104,6 +104,7 @@ ALU_Ctrl AC(
 
 Sign_Extend SE(
     .data_i(instr[15:0]),
+    .ALUOp_i(ALUOp),
     .data_o(data_ext)
     );
 
