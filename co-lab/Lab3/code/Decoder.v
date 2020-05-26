@@ -42,8 +42,10 @@ assign ALU_op = (instr_op == 4 ? 3'b011 : // BEQ -> SUB
                 (instr_op == 11 ? 3'b100 : // SLTIU -> SLTIU
                 (instr_op == 13 ? 3'b001 : // ORI -> OR
                 (instr_op == 15 ? 3'b110 : // LUI -> LUI
-                3'b111))))))));
-assign ALUSrc = (instr_op == 8 || instr_op == 11 || instr_op == 15 || instr_op == 13);
+                (instr_op == 35 ? 3'b010 : // LW -> ADD
+                (instr_op == 43 ? 3'b010 : // SW -> ADD
+                3'b111))))))))));
+assign ALUSrc = (instr_op == 8 || instr_op == 11 || instr_op == 15 || instr_op == 13 || instr_op == 43 || instr_op == 35);
 assign RegDst = (instr_op == 0);
 assign Branch = (instr_op == 4 || instr_op == 5 || instr_op == 6 || instr_op == 7);
 assign BranchType = (instr_op == 4 ? 2'b00 : // BEQ
