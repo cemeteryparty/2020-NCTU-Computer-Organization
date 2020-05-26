@@ -30,7 +30,7 @@ output         Jump;
 
 
 //Internal Signals
-assign RegWrite = (instr_op == 0 || instr_op == 8 || instr_op == 11 || instr_op == 13 || instr_op == 15);
+assign RegWrite = (instr_op == 0 || instr_op == 8 || instr_op == 11 || instr_op == 13 || instr_op == 15 || instr_op == 35 || instr_op == 3);
 assign MemToReg = (instr_op == 35) ? 1 : 0;
 assign MemRead = (instr_op == 35) ? 1 : 0;
 assign MemWrite = (instr_op == 43) ? 1 : 0;
