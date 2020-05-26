@@ -158,7 +158,7 @@ Shift_Left_Two_32 Shifterj( // jump shifter
 assign addr_nj = {addr_n1[31:28],addr_shj[27:0]};
 assign GetBranch = (BranchType == 0)?Zero                 // BEQ
                : ((BranchType == 1)?~Zero                 // BNE
-               : ((BranchType == 2)?alu_res[31]           // BLEZ
+               : ((BranchType == 2)?(alu_res[31] | Zero)  // BLEZ
                : ((BranchType == 3)?~(Zero | alu_res[31]) // BGTZ
                : 1'b0)));
 MUX_2to1 #(.size(32)) Mux_PC_Source(
