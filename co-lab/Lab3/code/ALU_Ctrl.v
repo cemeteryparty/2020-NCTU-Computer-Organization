@@ -33,6 +33,6 @@ assign ALUCtrl_o = (ALUOp_i != 3'b111)?ALUOp_i_ex // i-type
 				 : ((funct_i == 6'b011000)?4'b1000 // mul: *   (8)
 				 : 4'b0110)))))))));
 
-assign JumpReg = (ALUOp_i != 3'b111) && (funct_i == 6'b001000);
-assign Shamt = (ALUOp_i != 3'b111) && ((funct_i == 6'b000011) || (funct_i == 6'b000000));
+assign JumpReg = (ALUOp_i == 3'b111) && (funct_i == 6'b001000);
+assign Shamt = (ALUOp_i == 3'b111) && ((funct_i == 6'b000011) || (funct_i == 6'b000000));
 endmodule
