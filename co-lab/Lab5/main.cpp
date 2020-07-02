@@ -10,7 +10,8 @@ struct TestData{
 	vector<vector<int> > A, B;
 };
 void ReadFile(const char *filename, TestData & td);
-int matmul(vector<vector<int> > & A, vector<vector<int> > & B, vector<vector<int> > & C);
+int matmul(vector<vector<int> > & A, vector<vector<int> > & B, vector<vector<int> > & C, int baseA, int baseB, int baseC);
+vector<int> MEMAccess;
 int main(int argc, char const *argv[]){
 	if(argc != 3){
 		printf("Usage: ./simulate_caches [input_filename] [output_filename]");
