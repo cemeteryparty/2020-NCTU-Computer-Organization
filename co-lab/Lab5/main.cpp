@@ -16,9 +16,9 @@ struct cache_content{
 	int time_stamp;
 };
 void ReadFile(const char *filename, TestData & td);
-void WriteFile(const char *filename, vector<vector<int> > & C, int ProgExeCycle, int MemStallCycle_a, int MemStallCycle_b);
+void WriteFile(const char *filename, vector<vector<int> > & C, int ProgExeCycle, int MemStallCycle_a, int MemStallCycle_b, int MemStallCycle_c);
 int matmul(vector<vector<int> > & A, vector<vector<int> > & B, vector<vector<int> > & C, int baseA, int baseB, int baseC);
-void Simulate(int & MemStallCycle_a, int & MemStallCycle_b, int & MemStallCycle_c);
+void Simulate(int & MemStallCycle_a, int & MemStallCycle_b);
 vector<int> MEMAccess;
 
 int main(int argc, char const *argv[]){
@@ -33,7 +33,7 @@ int main(int argc, char const *argv[]){
 	int ProgExeCycle = matmul(td.A, td.B, C, td.ADDR0, td.ADDR1, td.ADDR2);
 	int MemStallCycle_a = 0, MemStallCycle_b = 0, MemStallCycle_c = 0;
 	Simulate(MemStallCycle_a, MemStallCycle_b);
-	_SIMULATE2LEVEL(MemStallCycle_c);
+	//_SIMULATE2LEVEL(MemStallCycle_c);
 
 	WriteFile(argv[2], C, ProgExeCycle, MemStallCycle_a, MemStallCycle_b, MemStallCycle_c);
 	return 0;
@@ -171,7 +171,6 @@ void Simulate(int & MemStallCycle_a, int & MemStallCycle_b){
 		bool hit = false;
 		index = (x >> (offset_bit)) & (line - 1);
 		tag = x >> (index_bit + offset_bit);
-		int loc = 0,diff = INT_MIN;
 		for(int i = 0;i < n_ways;i++)
 			if(cache[index][i].v && cache[index][i].tag == tag){ // hit
 				hit = true;
