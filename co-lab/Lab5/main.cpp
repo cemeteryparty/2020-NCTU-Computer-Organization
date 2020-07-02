@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include <cmath>
+#include <climits>
 
 using namespace std;
 
@@ -19,11 +20,12 @@ void ReadFile(const char *filename, TestData & td);
 void WriteFile(const char *filename, vector<vector<int> > & C, int ProgExeCycle, int MemStallCycle_a, int MemStallCycle_b, int MemStallCycle_c);
 int matmul(vector<vector<int> > & A, vector<vector<int> > & B, vector<vector<int> > & C, int baseA, int baseB, int baseC);
 void Simulate(int & MemStallCycle_a, int & MemStallCycle_b);
+void Simulate2Level(int & MemStallCycle_c);
 vector<int> MEMAccess;
 
 int main(int argc, char const *argv[]){
 	if(argc != 3){
-		printf("Usage: ./simulate_caches [input_filename] [output_filename]");
+		printf("Usage: ./simulate_caches [input_filename] [output_filename]\n");
 		exit(0);
 	}
 	TestData td;
@@ -33,7 +35,7 @@ int main(int argc, char const *argv[]){
 	int ProgExeCycle = matmul(td.A, td.B, C, td.ADDR0, td.ADDR1, td.ADDR2);
 	int MemStallCycle_a = 0, MemStallCycle_b = 0, MemStallCycle_c = 0;
 	Simulate(MemStallCycle_a, MemStallCycle_b);
-	//_SIMULATE2LEVEL(MemStallCycle_c);
+	Simulate2Level(MemStallCycle_c);
 
 	WriteFile(argv[2], C, ProgExeCycle, MemStallCycle_a, MemStallCycle_b, MemStallCycle_c);
 	return 0;
@@ -145,7 +147,6 @@ void Simulate(int & MemStallCycle_a, int & MemStallCycle_b){
 	int n_ways = 8;
 	int cache_size = 512;
 	int block_size = 32;
-	unsigned int tag, index, x;
 
 	int block_count = cache_size / block_size;
 	int line = block_count / n_ways;
@@ -153,8 +154,6 @@ void Simulate(int & MemStallCycle_a, int & MemStallCycle_b){
 	int index_bit = (int)log2(line);
 
 	vector<vector<cache_content> > cache(line, vector<cache_content>(n_ways));
-
-	//printf("%d %d %d\n",offset_bit,index_bit,line);
 	for(int i = 0;i < line;i++)
 		for(int j = 0; j < n_ways; j++){
 			cache[i][j].v = false;
@@ -162,7 +161,7 @@ void Simulate(int & MemStallCycle_a, int & MemStallCycle_b){
 		}
 
 	int instr_count = 0,miss_count = 0;
-
+	unsigned int tag, index, x;
 	for(int cur = 0; cur < MEMAccess.size(); cur++){
 		instr_count++;
 		MemStallCycle_a += 4;
@@ -198,4 +197,114 @@ void Simulate(int & MemStallCycle_a, int & MemStallCycle_b){
 		}
 	}
 	//printf("Miss Rate = %d / %d = %f\n", miss_count, instr_count, (float)miss_count / instr_count);
+}
+void Simulate2Level(int & MemStallCycle_c){
+	int n_ways = 8;
+	int block_size2 = 128;
+	int cache_size2 = 4096;
+	unsigned int tag2, index2;
+	int instr_count2 = 0;
+	int offset_bit2 = (int)log2(block_size2);
+	int index_bit2 = (int)((log2(cache_size2 / block_size2))-log2(n_ways));
+	int line2 = (cache_size2 / block_size2 )/n_ways;
+
+	vector<vector<cache_content> > cache2(line2,vector<cache_content>(n_ways));
+
+	int block_size = 16;
+	int cache_size = 128;
+	unsigned int tag, index, x;
+	int instr_count = 0;
+	int total_cycle = 0;
+
+	int offset_bit = (int)log2(block_size);
+	int index_bit = (int)log2((cache_size / block_size) >> 3) ;
+	int line = (cache_size / block_size )/n_ways;
+
+
+	vector<vector<cache_content> > cache(line,vector<cache_content>(n_ways));
+	for(int i = 0;i < line;i++)
+		for(int j = 0; j < n_ways; j++){
+			cache[i][j].v = false;
+			cache[i][j].time_stamp = 0;
+		}
+
+	for(int i = 0;i < line2;i++)
+		for(int j = 0; j < n_ways; j++){
+			cache2[i][j].v = false;
+			cache2[i][j].time_stamp = 0;
+		}
+
+	for(int cur = 0; cur < MEMAccess.size(); cur++){
+		x = MEMAccess[cur];
+		bool hit = false;
+		index = (x >> offset_bit) & (line - 1);
+		tag = x >> (index_bit + offset_bit);
+
+		int loc = 0,diff = INT_MIN;
+		for(int i = 0;i < n_ways;i++){
+			if(cache[index][i].v && cache[index][i].tag == tag){
+				hit = true;
+				cache[index][i].time_stamp = instr_count;
+				break;
+			}
+		}
+
+		//if(hit) continue;
+		for(int i = 0; i < n_ways; i++){
+			if(!cache[index][i].v){
+				loc = i;
+				break;
+			}
+			else{
+				if((instr_count - cache[index][i].time_stamp) > diff){
+					diff = instr_count - cache[index][i].time_stamp;
+					loc = i;
+				}
+			}
+		}
+
+		if(!hit){
+			index2 = (x >> offset_bit2) & (line2 - 1);
+			tag2 = x >> (index_bit2 + offset_bit2);
+
+			int loc2 = 0,diff2 = INT_MIN;
+			for(int j = 0;j < n_ways;j++){
+				if(cache2[index2][j].v && cache2[index2][j].tag == tag2){
+					hit = true;
+					cache2[index2][j].time_stamp = instr_count2;
+					break;
+				}
+			}
+			for(int j = 0; j < n_ways; j++){
+				if(!cache2[index2][j].v){
+					loc2 = j;
+					break;
+				}
+				else{
+					if((instr_count2 - cache2[index2][j].time_stamp) > diff2){
+						diff2 = instr_count2 - cache2[index2][j].time_stamp;
+						loc2 = j;
+					}
+				}
+			}
+
+			if(!hit){
+				cache2[index2][loc2].v = true;  // miss
+				cache2[index2][loc2].tag = tag2;
+				cache2[index2][loc2].time_stamp = instr_count2;
+				total_cycle += 1+32*(1+100+1+10)+4*(1+10+1+1)+1+1;
+			}
+			else
+				total_cycle += 1+4*(1+10+1+1)+1+1;
+
+			cache[index][loc].v = true;  // miss
+			cache[index][loc].tag = tag;
+			cache[index][loc].time_stamp = instr_count;
+			instr_count2++;
+		}
+		else
+			total_cycle += 3;
+		instr_count++;
+	}
+	MemStallCycle_c = total_cycle;
 }
