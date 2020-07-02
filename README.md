@@ -7,3 +7,4 @@ NCTU 2020 Computer Organization
 >* [Lab 2: Simpliﬁed Single-cycle CPU](/co-lab/Lab2)
 >* [Lab 3: Single-cycle CPU With Memory Access And Jump](/co-lab/Lab3)
 >* [Lab 4: Cache Simulator](/co-lab/Lab4)
+>* [Lab 5: Cache Performance](/co-lab/Lab5)
