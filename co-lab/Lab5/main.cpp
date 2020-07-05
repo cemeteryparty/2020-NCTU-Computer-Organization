@@ -58,11 +58,15 @@ void ReadFile(const char *filename, TestData & td){
 void WriteFile(const char *filename, vector<vector<int> > & C, int ProgExeCycle, int MemStallCycle_a, int MemStallCycle_b, int MemStallCycle_c){
 	FILE *fp = fopen(filename, "w");
 	for(int i = 0;i < C.size();i++){
-		for(int j = 0;j < C[i].size();j++)
+		for(int j = 0;j < C[i].size();j++){
 			fprintf(fp, "%d ", C[i][j]);
+			printf("%d ", C[i][j]);
+		}
 		fprintf(fp, "\n");
+		printf("\n");
 	}
 	fprintf(fp, "%d %d %d %d\n", ProgExeCycle, MemStallCycle_a, MemStallCycle_b, MemStallCycle_c);
+	printf("%d %d %d %d\n", ProgExeCycle, MemStallCycle_a, MemStallCycle_b, MemStallCycle_c);
 }
 int matmul(vector<vector<int> > & A, vector<vector<int> > & B, vector<vector<int> > & C, int baseA, int baseB, int baseC){
 	int ProgExeCycle = 0;
